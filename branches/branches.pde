@@ -29,10 +29,12 @@ void draw(){
     branches[i].show();
   }
   
-  
+  //if branch is not done growing
   if (branches[branchCount].finished != true){ 
     branches[branchCount].grow();
   }
+  //if branch is done growing, initialize next branch
+  //using end coordinates of last branch
   else if (branches[branchCount].finished == true){
     startPosition.x  = branches[branchCount].current.x;
     startPosition.y = branches[branchCount].current.y;
