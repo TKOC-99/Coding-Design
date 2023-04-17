@@ -175,10 +175,6 @@ class Line{
     lines[lineCounter].b = y2 - (lines[lineCounter].m * x2);
     lines[lineCounter].direction = this.nextDirection;
     lines[lineCounter].extend();
-
-
-    
-
   }
   
   void show(){
