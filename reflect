@@ -1,0 +1,190 @@
+float tmpX1, tmpY1, tmpX2, tmpY2;
+boolean draw_tmp_line = false;
+final int LINE_COUNT = 100;
+
+void setup(){
+  size(1500, 1000);
+  background(0);
+}
+
+float mouse_x;
+float mouse_y;
+float scale = 1;
+
+Line[] lines = new Line[LINE_COUNT];
+int lineCounter = 1;
+
+void draw(){
+  background(0);
+  translate(width / 2, height / 2);
+  
+  //get mouse coordinates, taking translation and scale into account
+  mouse_x = (mouseX - (width / 2)) / scale;
+  mouse_y = (mouseY - (height / 2)) / scale;
+  
+  if (draw_tmp_line == true){
+    stroke(255);
+    strokeWeight(1);
+    line(tmpX1, tmpY1, tmpX2, tmpY2);
+  }
+  
+  if (lines[0] != null && lines[0].draw == true){
+    lines[0].show();
+  }
+  
+  for (int i = 0; i < LINE_COUNT; i++){
+    if (lines[i] != null){
+      lines[i].show();
+    }
+  }
+}
+
+
+void mousePressed(){
+
+  draw_tmp_line = true;
+  
+  lineCounter = 0;
+  
+  //get mouse coordinates to draw line
+  tmpX1 = mouse_x;
+  tmpY1 = mouse_y;
+  
+  tmpX2 = tmpX1;
+  tmpY2 = tmpY1;
+  
+  //create a line that will remain drawn after the mouse button is released
+  lines[0] = new Line(tmpX1, tmpY1, tmpX2, tmpY2);
+}
+
+
+void mouseDragged(){
+  tmpX2 = mouse_x;
+  tmpY2 = mouse_y;
+  
+  lines[0].x2 = tmpX2;
+  lines[0].y2 = tmpY2;
+}
+
+
+void mouseReleased(){
+  draw_tmp_line = false;
+  
+  //get line function
+  lines[0].getFunction();
+  //get line direction
+  lines[0].getDirection();
+  //extend line
+  lines[0].extend();
+}
+
+class Line{
+  float x1, y1, x2, y2;
+  boolean draw = false;
+  
+  //direction: 0 = left to right, 1 = right to left
+  int direction, nextDirection;
+  
+  //slope
+  float m;
+  //y intercept
+  float b;
+  
+  Line(float x_1, float y_1, float x_2, float y_2){
+    x1 = x_1;
+    y1 = y_1;
+    x2 = x_2;
+    y2 = y_2;
+  }
+  
+  void getDirection(){
+    if (x2 > x1){
+      direction = 0;
+    }
+    else if (x2 < x1){
+      direction = 1;
+    }
+  }
+  
+  
+  void getFunction(){
+    //get slope
+    m = (y2 - y1) / (x2 - x1);
+
+    //get y intercept
+    b = y2 - (m * x2);
+  }
+  
+  void extend(){
+    float leftEdge = -width / 2;
+    float rightEdge = width / 2;
+    float topEdge = -height /2;
+    float bottomEdge = height / 2;
+    
+    //if the line goes from left to right
+    if (direction == 0){
+      do {
+        x2++;
+        y2 = (m * x2) + b;
+      }
+      while (x2 < rightEdge && y2 >= topEdge && y2 <= bottomEdge);
+      
+      if (x2 == rightEdge){
+        nextDirection = 1;
+      }
+      else{
+        nextDirection = 0;
+      }
+    }
+    
+    //else if the line goes from right to left
+    else if (direction == 1){
+     do {
+        x2--;
+        y2 = (m * x2) + b;
+      }
+      while (x2 > leftEdge && y2 >= topEdge && y2 <= bottomEdge);
+      
+      if (x2 == leftEdge){
+        nextDirection = 0;
+      }
+      else{
+        nextDirection = 1;
+      }
+    }
+    if (lineCounter < LINE_COUNT - 1){
+    lineCounter++;
+    this.reflect();
+    }
+    draw = true;
+  }
+  
+  void reflect(){
+    //create a new line
+    if (lines[lineCounter] == null){
+      lines[lineCounter] = new Line(x2, y2, x2, y2);
+    }
+    else {
+      lines[lineCounter].x1 = x2;
+      lines[lineCounter].y1 = y2;
+      lines[lineCounter].x2 = x2;
+      lines[lineCounter].y2 = y2;
+    }
+    //get new function and direction of line
+    lines[lineCounter].m = -m;
+    lines[lineCounter].b = y2 - (lines[lineCounter].m * x2);
+    lines[lineCounter].direction = this.nextDirection;
+    lines[lineCounter].extend();
+
+
+    
+
+  }
+  
+  void show(){
+    stroke(255);
+    strokeWeight(1);
+    
+    line(x1, y1, x2, y2);
+  }
+}
